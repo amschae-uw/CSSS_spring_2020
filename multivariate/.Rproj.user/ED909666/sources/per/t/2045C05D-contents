@@ -1,0 +1,119 @@
+---
+title: "R Markdown Example"
+author: "Ruoyi Zhu"
+date: "3/25/2020"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+This is how you write basic math inline with text:  $x + y = z$  \
+
+\bigskip
+
+This is how you write basic math in displayed equation:
+
+\[
+x + y = z
+\]
+
+or 
+
+$$x + y = z$$
+
+\bigskip
+
+This is how you write a matrix:
+\[
+\mathbf{X} = 
+\left(
+\begin{matrix} 
+x_{11} & x_{12} & x_{13} \\
+x_{21} & x_{22} & x_{23} \\
+\end{matrix}
+\right)
+\]
+
+\[
+\mathbf{X} = 
+\left(
+\begin{matrix} 
+1 &  \\
+1 & 1 \\
+\end{matrix}
+\right)
+\]
+
+\bigskip
+
+This is how you include tables.
+
+First Header  | Second Header
+------------- | -------------
+Content Cell  | Content Cell
+Content Cell  | Content Cell
+
+
+\bigskip
+
+This is how you make a numbered list:
+\begin{enumerate}
+\item First element of list
+\item Second element of list
+\end{enumerate}
+
+\bigskip
+
+This is how you make an unnumbered list:
+\begin{itemize}
+\item First element of list
+\item Second element of list
+\end{itemize}
+
+\bigskip
+
+This is how you include the value $\pi$ = `r pi` inline with text.
+
+\bigskip 
+
+This is how you include basic R code:
+```{r}
+set.seed(1)
+x = rnorm(1000)
+mean(x)
+sd(x)
+
+y = rnorm(1000,mean=1,sd=2)
+mean(y)
+sd(y)
+```
+
+
+This is how you include R code with figures (no difference!):
+```{r}
+set.seed(1)
+x = rnorm(1000)
+hist(x)
+```
+
+
+\bigskip 
+
+Using the same R code above, if we want to hide the code and only show the output:x
+
+```{r echo=FALSE}
+set.seed(1)
+x = rnorm(1000)
+mean(x)
+sd(x)
+
+y = rnorm(1000,mean=1,sd=2)
+mean(y)
+sd(y)
+```
+
+```{r echo=FALSE}
+set.seed(1)
+x = rnorm(1000)
+hist(x)
+```

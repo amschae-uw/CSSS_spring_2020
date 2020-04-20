@@ -1,0 +1,182 @@
+---
+title: "Lab 2: Stratified sampling and more about the survey package"
+author: "Jessica Godwin"
+date: "4/5/2018"
+output: 
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#knitr::opts_knit$set(root.dir = '~/Dropbox/TA-shared-Godwin/labs-2018/Lab 2')
+```
+
+# Getting to know the apistrat data
+
+Load our stratified api data. Let's look at the API from 2000 again and those that met their comparable improvement target. 
+
+```{r, echo = T, message = FALSE}
+#### Libraries ####
+library(survey)
+library(dplyr)
+library(tidyr)
+library(xtable)
+library(knitr)
+
+#### Load data ####
+data(api)
+
+
+#### Summarizing data using different R Functions ####
+?apistrat
+str(apistrat)
+summary(apistrat)
+```
+
+
+## Sampling weights by school type
+```{r, echo = T, message = FALSE}
+unique(apistrat$pw[apistrat$stype == "E"])
+unique(apistrat$pw[apistrat$stype == "M"])
+unique(apistrat$pw[apistrat$stype == "H"])
+
+table(apistrat$stype,
+      apistrat$pw)
+```
+
+`table` does not provide an elegant output here. 
+
+```{r, echo = T, message = F}
+#### base R ####
+aggregate(pw ~ stype, data = apistrat,
+          FUN = unique)
+
+#### tidyverse ####
+apistrat %>% group_by(stype) %>%
+  summarise(weights = unique(pw))
+
+```
+
+If you'd like to get to know any of these functions better, see their documentation files.
+```{r, echo = T, eval = F}
+?table
+?aggregate
+?group_by
+?summarise
+```
+
+### Making tables in RMarkdown
+
+Sometimes in a `.Rmd` file, you'd like to display the information in a nicely formatted table instead of as `R` output. Let's look at some ways of doing this.
+
+One way is to write the table in markdown. This is not suggested as it is not replicable. It may be a good idea for certain types of tables. However, if you are using code to create the table, it may lead to mistakes later or work that is not reproducible.
+
+School Type | Weight
+------------|--------
+Elementary  | 44.21
+Middle      | 15.10
+High        | 20.36
+
+`knitr` has it's own table function-- the `kable()` function. You can specify the format of the document you're making within the `kable()` function itself so it is not document-type specific, but you have to change the arguments `format` for each document type. See the documentation [here.](https://bookdown.org/yihui/rmarkdown-cookbook/duplicate-label.html)
+
+```{r}
+?kable
+
+weights.table <- aggregate(pw ~ stype,
+                           data = apistrat,
+                           FUN = unique)
+levels(weights.table$stype)
+levels(weights.table$stype) <- c("Elementary", 
+                                 "High",
+                                 "Middle")
+weights.table
+weights.table <- weights.table[match(c("Elementary",
+                                       "Middle",
+                                       "High"), weights.table$stype), ]
+names(weights.table) <- c("School Type", "Weight")
+
+kable(weights.table, format = 'html',
+      digits = 2, row.names = FALSE,
+      col.names <- names(weights.table),
+      align = "lr",
+      caption = "Sampling weights by schooltype in the apistrat dataset.")
+```
+
+
+Another way is with the `xtable()` function. (This requires LaTeX and Knit to .pdf)
+You'll need the chunk preamble to be `results = 'asis'` when using the `xtable()` and `print.xtable()` functions. Normally, you will NOT want this option. You'll also need to change the preamble of your .Rmd file to knit to create a .pdf document OR select within the Knit dropdown menu "Knit to .pdf"
+```{r, results = 'asis'}
+?xtable
+weights.xtable <- xtable(weights.table, align = "cr|c",
+                         digits = c(2,2,2),
+                         caption = "Sampling weights by schooltype in the apistrat dataset.")
+print.xtable(weights.xtable,
+             include.rownames = FALSE,
+             comment = FALSE)
+```
+
+
+### Calculating sampling weights
+How are these calculated? Well, let's look at our sampling frame. This will allow us to know how many of each type of school are in the population. Looking at \texttt{apistrat} will tell us how many we sampled from each school type.
+
+```{r, echo = T}
+summary(apistrat$stype)
+n <- summary(apistrat$stype)
+summary(apipop$stype)
+N <- summary(apipop$stype)
+n/N
+N/n
+unique(apistrat$pw)
+```
+
+For each person $i$ in strata $h$, $\pi_{ih}  = \dfrac{n_h}{N_h}$ and $w_h = \dfrac{N_h}{n_h}$. So for the elementary strata, $n_E = 100$ and $N_E = 4421$ so $$\pi_{iE} = \dfrac{n_E}{N_E} = 0.0226$$ and $$w_{iE} = \dfrac{N_E}{n_E} = 44.21.$$ This is what we see reflected in our sampling weights in \texttt{apistrata\$pw}. 
+
+## Estimating the proportion of schools who met the improvement targets
+
+### Stratified survey design object
+```{r, echo = T}
+
+##set the survey design for the stratified sample
+
+des <- svydesign(id = ~1, strata = ~stype, 
+                 weights = ~pw, data = apistrat)
+
+des
+```
+
+### Totals
+```{r}
+svytotal(~comp.imp, design = des)
+
+confint(svytotal(~comp.imp, design = des))
+```
+
+### Means
+If we want to estimate means, they will be proportions for this binary indicator.
+
+```{r, echo = T}
+svymean(~comp.imp, design = des)
+confint(svymean(~comp.imp, design = des))
+
+```
+
+### Confidence intervals for proportions
+The \texttt{survey} package also has a nice function to compute CIs for a proportion. It requries use of the \texttt{~I()} syntax, which allows you to analyze a function of your data frame. Suppose I want to see a confidence interval for the proportion of schools that met their improvement target.
+
+How do the intervals compare to `confint()`
+
+```{r, echo = T}
+svyciprop(~I(comp.imp == "Yes"), design = des)
+svyciprop(~I(comp.imp == "No"), design = des)
+confint(svymean(~comp.imp, design = des))
+```
+
+### `svyby()`
+
+The `svyby()` function allows us to do small area estimation (estimate quantities of interest within subgroups of the population) with other common survey functions.
+
+```{r}
+svyby(~enroll, by = ~comp.imp,
+      design = des, FUN = svymean)
+```

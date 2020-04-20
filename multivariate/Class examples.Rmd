@@ -1,0 +1,49 @@
+---
+title: "Class examples"
+author: "Alex Schaefer"
+date: "4/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+library(robustHD)
+
+data <- as.data.frame(matrix(1:1, nrow = 5, ncol = 0))
+data$height <- c(68, 73, 67, 64, 76)
+data$weight <- c(140, 185, 165, 120, 210)
+data$shoesize <- c(9.5, 12, 11, 10, 12)
+
+data$height<- standardize(data$height)
+data$weight<- standardize(data$weight)
+data$shoesize<- standardize(data$shoesize)
+
+head(data)
+
+ ((.70+.54)^2+(.59-.03)^2+(.96-.09)^2)^.5
+
+library(philentropy)
+
+# compute the Euclidean Distance with default parameters
+distance(data, method = "euclidean", use.row.names = TRUE)
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

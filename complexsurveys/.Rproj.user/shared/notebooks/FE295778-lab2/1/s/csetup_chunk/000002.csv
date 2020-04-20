@@ -1,0 +1,2 @@
+"0","knitr::opts_chunk$set(echo = TRUE)"
+"0","#knitr::opts_knit$set(root.dir = '~/Dropbox/TA-shared-Godwin/labs-2018/Lab 2')"

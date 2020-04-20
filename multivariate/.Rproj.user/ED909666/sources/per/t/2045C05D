@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1585873398555.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2511929480",
+    "id" : "2045C05D",
+    "lastKnownWriteTime" : 1585872250,
+    "last_content_update" : 1585872250,
+    "path" : "~/Downloads/CSSS589_Lab1.Rmd",
+    "project_path" : null,
+    "properties" : {
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

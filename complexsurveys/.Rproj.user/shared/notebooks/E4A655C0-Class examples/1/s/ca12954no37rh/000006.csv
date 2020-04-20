@@ -1,0 +1,11 @@
+"0","data(api)
+strat_rows <- stratsample(apipop$stype, 
+                         counts=c(E=100, M=50, H=50))
+ strat.data <- apipop[strat_rows,]
+ dim(strat.data)
+"
+"1","[1]"
+"1"," 200"
+"1","  37"
+"1","
+"
