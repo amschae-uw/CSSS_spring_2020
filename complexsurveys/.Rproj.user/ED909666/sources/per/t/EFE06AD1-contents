@@ -1,0 +1,222 @@
+---
+title: 'Stat 529 Lab 1: R & Survey Package'
+author: "Jessica Godwin"
+date: "April 2, 2020"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Outline
+
+\begin{itemize}
+\item Basic \texttt{R} functions and resources
+\item Overview of and practice with \texttt{R}
+\item Derivation of Horvitz-Thompson variance estimator
+\end{itemize}
+
+## R, RStudio, R Markdown
+
+Download \texttt{R} here: (http://cran.r-project.org/) \
+
+Reference card: (http://cran.r-project.org/doc/contrib/Short-refcard.pdf)
+
+\vspace{0.2in}
+
+Download RStudio (GUI, helps to implement R Markdown) here: (http://www.rstudio.com)
+
+\vspace{0.2in}
+
+Markdown is a simple formatting syntax for creating HTML, PDF and Word documents. R Markdown allows for easy integration of this syntax with R syntax, which allows you to publish both \texttt{R} code snippets and output in your document. See more here: \url{http://rmarkdown.rstudio.com} \
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+## Starting with the survey package
+
+Let's load the \texttt{survey} package and our data.\
+
+The documentation can be found \href{https://cran.r-project.org/web/packages/survey/survey.pdf}{here}, and is quite helpful. Note: this is giving you the same information as if you used the \texttt{> ?} syntax followed by the name of a function or data frame in the package.
+
+```{r echo = T, message = F}
+library(survey)
+data(api) #Loads several datasets.
+?api
+names(apisrs)
+head(apisrs)
+
+?apisrs #Loads help page for this dataset.
+```
+
+## About the California API data
+Loading the \texttt{api} data gives us access to 5 different data frames. All of them are documented in the \texttt{survey} package documentation. \
+
+\begin{itemize}
+\item \texttt{apipop}: the California API sampling frame
+\item \texttt{apisrs}: a simple random sample of 200 from \texttt{apipop}
+\item \texttt{apistrat}: a stratifed sample of 200 from \texttt{apipop}
+\item \texttt{apiclus1}: a one-stage cluster sample of school districts from \texttt{apipop}
+\item \texttt{apiclus2}: a two-stage cluster sample of schools within districts from \texttt{apipop}
+\end{itemize}
+
+## Taking a sample from the sampling frame
+
+Suppose we want to create our own simple random sample from the California API sampling frame. Some useful functions will be:
+
+\begin{itemize}
+\item \texttt{dim()}: calcuate the dimension of the data frame
+\item \texttt{length()}: calcuate the length of a vector
+\item \texttt{set.seed()}: sets the seed for random number generation, good for checking your work and debugging
+\item \texttt{sample()}: takes a sample of a certain size from elements of a vector
+\end{itemize}
+
+We can take our sample in two ways: one by sampling the row index of the data.frame and one by sampling the unique school ID given by the variable \texttt{cds}. Since the sampling frame has exactly one row per school, we will sample the indices for ease of subsetting our data later.
+
+```{r echo = T}
+dim(apipop)
+N <- dim(apipop)[1]
+length(unique(apipop$cds))
+#N <- length(unique(apipop$cds))
+
+n <- 1000
+set.seed(2018)
+
+?sample
+srs.index <- sample(1:N, size = n)
+#srs.cds <- sample(n, apipop$cds)
+
+my.sample <- apipop[srs.index, ]
+dim(my.sample)
+```
+
+## Sampling Weights
+
+What is the weight of each observation in our sampled dataset? What is the probability each school had of ending up in our dataset? Are they the same for all units in our sample?  $$\pi_k = \dfrac{n}{N}$$ So, $$w_k = \dfrac{1}{\pi_k}$$.
+
+```{r echo = T}
+
+my.sample$weights <- N/n
+
+```
+
+Recall we can get an estimate of the population size, $\hat{N}$ from the sum of our sample weights. $$\hat{N} = \sum_{k=1}^n w_k = \sum_{k=1}^n \dfrac{1}{\pi_k}  = \sum_{k = 1}^n \dfrac{N}{n} = n \times \dfrac{N}{n} = N$$
+For an SRS this estimate will always give us the actual population size. As sampling designs get more complicated this will not always be the case.
+
+## Horvitz-Thompson estimators
+
+## Estimating the average API in California
+
+Suppose we want to estimate the average Academic Performance Index (API) 2000 in California using a SRS. We can do this easily with the \texttt{survey} package. We will use the \texttt{apisrs} dataset.\
+
+First, we need to tell the \texttt{survey} package what our sampling scheme is.
+
+\begin{itemize}
+\item \texttt{ids}: cluster ids, or ~0 or ~1 if not a clustered sample
+\item \texttt{strata}: specify strata in a stratified sample
+\item \texttt{weights}: specify the sampling weights
+\item \texttt{fpc}: specify the finite population correction
+\item \texttt{data}: specify the dataset
+\end{itemize}
+
+Note there are many more arguments to this function for more complicated survey designs.
+
+```{r echo = T}
+?svydesign
+names(apisrs)
+?apisrs
+```
+Variables of note in our dataset:
+
+\begin{itemize}
+\item \texttt{api00}: API for year 2000
+\item \texttt{pw}: sampling weight for the school
+\item \texttt{fpc}: finite popultion correction
+\end{itemize}
+
+Do we have clusters in our sample? Is our sample stratified? Are we given, or can we compute, the finite population correction for our sample?
+
+## Defining the survey design
+
+```{r echo = T}
+srs.des <- svydesign(ids = ~1, weights = ~pw, 
+                     fpc = ~fpc, data = apisrs)
+
+```
+
+In class we saw the Horvitz-Thompson estimator of the total is defined as $$\hat{Y} = \sum_{k} w_k y_k,$$ where $y_k$ is the response for subject k. Though we could calculate this by hand, the \texttt{survey} package makes it easier for us. (See the \texttt{svytotal} function.)\
+
+We want to estimate a mean, which we can do using either the Horvitz-Thompson estimator or the Hajek estimator.\
+
+Horvitz-Thompson estimator: $$\hat{\bar{Y}} = \dfrac{ \sum_k w_k y_k}{N}$$
+Hajek estimator: $$\hat{\bar{Y}} = \dfrac{ \sum_k w_k y_k}{\sum_k w_k}$$
+
+What is the difference? When would we use one over the other? Are they ever the same?
+
+## Calculating the mean
+```{r echo = T}
+?svytotal
+?svymean
+svymean(~api00, design = srs.des)
+```
+
+## Variance of the Horvitz-Thompson estimator of the total
+
+## Joint sampling probabilities
+
+In class we talked about individual sampling probabilities $\pi_i$, i.e. the probability unit $i$ in the population ends up in our sample. To derive the variance of the H-T estimator, we need to consider the joint probabilites $\pi_{ij}$ that unit $i$ and unit $j$ make it into the sample. These are often more difficult to calculate than the individual $\pi_i$s.\
+
+Consider $R_i$ an indicator of inclusion in the sample, such that $R_i = 0$ if unit $i$ does not end up in the sample and $R_i = 1$ if unit $i$ is selected into our sample. Then
+
+\begin{itemize}
+\item $R_i$ are binomial, but not independent (we are sampling without replacement)
+\item $E[R_i] = \pi_i$
+\item $V(R_i) = \pi_i(1 - \pi_i)$
+\item $Cov(R_i, R_j) = \pi_{ij} - \pi_i \pi_j$.
+\end{itemize}\
+
+## Horvitz-Thompson estimator of the total
+
+Recall the definition of the Horvitz-Thompson estimator of the total from class:
+$$\hat{T} = \sum_{i = 1}^n w_i y_i.$$
+
+We can rewrite this as: $$\hat{T} = \sum_{i = 1}^N R_i w_i Y_i.$$\
+
+What is difference in the two defintions?\
+
+Again, we can show $\hat{T}$ is unbiased: $$E[\hat{T}] = \sum_{i = 1}^N E[R_i] w_i Y_i = \sum_{i = 1}^N \pi_i \dfrac{Y_i}{\pi_i} = \sum_{i = 1}^N Y_i = T.$$
+
+## Now, for the variance
+
+\textbf{RECALL:} $V(\sum_{j = 1}^m X_j) = \sum_{j = 1}^m \sum_{k = 1}^m Cov(X_j, X_k)$.\
+
+Let $w_{ij}  = \dfrac{1}{\pi_{ij}}.$
+
+\begin{align*}
+V(\hat{T}) = V\left( \sum_{i=1}^N R_i \times w_i Y_i \right)\\
+= \sum_{i = 1}^N \sum_{j = 1}^N Cov(R_i \times w_i Y_i, R_j \times w_j Y_j)\\
+= \sum_{i = 1}^N \sum_{j = 1}^N Cov(R_i, R_j) w_iY_i \times w_j Y_j\\
+= \sum_{i = 1}^N \sum_{j = 1}^N (\pi_{ij} - \pi_i \pi_j)\dfrac{Y_i}{\pi_i} \dfrac{Y_j}{\pi_j}
+\end{align*}
+
+## $\pi_{ij}$ under SRS
+
+Recall sampling from an urn without replacement.\
+
+
+If we take a simple random sample of size $n$ from a population of size $N$, the probability units $i$ and $j$ are both selected into our sample is, $$\pi_{ij} = \dfrac{n}{N} \times \dfrac{n-1}{N-1}.$$ 
+
+Recall $\pi_i = \dfrac{n}{N}.$
+
+So,
+
+\begin{align*}
+V(\hat{T}) = \sum_{i = 1}^N \sum_{j = 1}^N (\pi_{ij} - \pi_i \pi_j)\dfrac{Y_i}{\pi_i} \dfrac{Y_j}{\pi_j}\\
+= \sum_{i = 1}^N \sum_{j = 1}^N (\dfrac{n}{N}\dfrac{n-1}{N-1} -\left( \dfrac{n}{N}\right)^2) \dfrac{NY_i}{n} \dfrac{N Y_j}{n}\\
+= \sum_{i = 1}^N \sum_{j = 1}^N  \left(\dfrac{n}{N}\dfrac{n-1}{N-1} -\left( \dfrac{n}{N}\right)^2\right) \left(\dfrac{N}{n}\right)^2 Y_i Y_j\\
+= ... = N^2 \dfrac{\sigma_Y^2}{n}\left( 1 - \dfrac{n}{N}\right),
+\end{align*}
+
+where $\sigma^2_Y = \dfrac{1}{N-1} \sum_{i = 1}^N (Y_i - \bar{Y})^2$.\
+
+Can you fill in the $\dots$? Try on your own, and I  will fill in the blanks next week.

@@ -1,0 +1,376 @@
+---
+title: 'STAT 529 Lab 1: R, R Markdown'
+author: "Jessica Godwin"
+date: "April 2, 2020"
+output:
+  html_document: default
+---
+
+# Credits
+
+This lab is based on the work of several Statistic TAs, including  Gang Cheng, Rebecca Ferrell, Amrit Dhar, Evan Greene, and Michael Karcher.
+
+# R, RStudio, and R Markdown
+
+We'll be using the following tools in this course:
+
+* **R** is a programming language for data analysis. If you do not already have this on your computer, please visit <http://cran.r-project.org> and download the most recent version supported for your operating system.
+
+* **RStudio** is a free, open-source integrated development environment (IDE) for R. You can use R without RStudio, but RStudio has many features that will make your life easier. After installing R, you should download and install RStudio from <https://www.rstudio.com/products/rstudio/download>. 
+
+* **R Markdown** is a authoring format for files that combine R code and text formatted with Markdown. You create a `.Rmd` file and compile it to create HTML or PDF output that can include formatted text, R code, R output and graphics, tables, and equations. RStudio provides a nice environment for editing and compiling R Markdown documents in one-click. The `rmarkdown` and `knitr` package in R does this behind the scenes for you. Install with `install.packages("rmarkdown")`, if necessary.
+
+# Introductory R and R Markdown
+
+We'll review the basic how-tos of R in this section. We will soon use this review as an opportunity to discuss R Markdown syntax, so feel free to follow along in the `.Rmd` file, too.
+
+* To create an R script within RStudio, go to the "File" menu, select "New File", and finally select "R Script".
+* To open an existing file, go to the "File" menu, select "Open File...", and navigate to the file.
+
+
+**At this point, try opening the file "lab1.R" and follow along.**
+
+The basic data structure in R is the vector. A vector contains elements of the same type.
+To construct a vector, use the constructor `c()` and assign to a variable `e` using the assignment operator `<-`.
+
+```{r}
+e <- c(1, 3, 8)
+e
+```
+
+Vectors in R are objects that contain elements of a single type.
+Parts of a line starting with the hash mark `#` are comments.
+They will not be evaluated when sent to the R interpreter.
+
+```{r}
+x <- c(1,2,3,4)        # numeric ------ to check, type "class(x)"
+x
+
+y <- c(TRUE, FALSE)    # logical
+y
+
+z <- c("hey","yo")     # character
+z
+```
+
+
+To run a line of code that appears in the editor window, navigate your cursor to the line you want to run, 
+then run it by pressing Ctrl-Enter (Command-Enter on a Mac) or by clicking **Run**.
+Alternately, select a section of code with your mouse or cursor, then run them all at once with Ctrl-Enter or **Run**.
+This will execute the line(s) in the console window in RStudio.
+
+**Try running the lines of code in `lab1.R` up to this point.**
+
+You can also type commands directly into the console (at the `>` prompt) 
+and hit Enter to run them.
+R is case-sensitive but commands can take up multiple lines for readability.
+
+# Example Code
+
+At this point, we will go through some more of the code in the file "lab1.R".
+
+Let's clear the environment of variables left over from previous examples.
+
+```{r}
+rm(list = ls(all = TRUE))
+```
+
+Note that the Environment pane in RStudio is now empty.
+You can also accomplish this by clicking the brush icon in the Environment tab.
+
+Let's create some vectors:
+
+```{r}
+x <- c(1,2,3,4)
+y <- c(TRUE, FALSE)
+z <- c(4,3,2,1)
+```
+
+We can check what kinds of data are in our variables:
+
+```{r, results="hide"}
+class(x)
+is.vector(x)
+```
+
+You can add meta data to vectors to assist with element look-ups:
+```{r}
+names(x) <- c("one", "two", "three", "four")
+x
+```
+
+R provides multiple ways to extract elements from vectors.
+The next 5 lines all extract the first element of vector `x`:
+```{r, results="hide"}
+x[1]
+x["one"]
+x[-c(2:4)] 
+x[x == 1]
+```
+
+R provides many built in functions to compute statistics about vectors and manipulate them.
+
+```{r, results="hide"}
+mean(x)
+sum(x)
+length(x)
+prod(x)
+var(x)
+sd(x)
+min(x); max(x) #you can use a semi colon to have multiple commands on the same line.
+mean(y) #Note that y is a logical vector -- R coerces it to numeric silently
+mean(x[x != 4])
+mean(x != 4)
+```
+
+**Try calculating the mean and standard deviation of the vector of numbers 4, 7, 15.**
+
+We can use `NA` to represent missing data.
+
+```{r, results="hide"}
+q = c(NA, NA, 5,4,NA,7)
+is.na(q)
+q[!is.na(q)] #use logical vector as index
+```
+
+Many operations are vectorized in R.
+
+```{r, results="hide"}
+z * 10
+z^2
+z + c(1,1,1,1)
+```
+
+## Sequences and repetitions
+
+R provides several built in functions to create numeric vectors.
+These functions are very useful: `seq()` is used to create sequences, and `rep()` is
+used to create repetitions.
+```{r, results="hide"}
+1:10
+seq(from=1, to=11, by=2)
+rep(c(0,1), each=2)
+rep(c(0,1), times=4)
+rep(c(0,1), each=2, times=4)
+```
+
+**Now try to create a vector containing all even numbers between 2 and 78 and store it in a variable.**
+
+For more information about these functions, see their documentation using `?`:
+```{r, results="hide"}
+?seq()
+?rep()
+```
+
+In general, you can access documentation about any function by using a leading question mark plus the function name.
+For example, if you want to know about the function `sapply()` try `?sapply()`.
+
+## Logical vectors
+
+Logical vectors support vectorized boolean operations, like AND `&`, OR `|`, NOT `!`, etc.
+```{r, results="hide"}
+A <- c(TRUE, FALSE, FALSE)
+Z <- c(FALSE, FALSE, TRUE)
+A & Z
+A | Z
+A == Z
+A != Z
+!A
+```
+
+
+
+# Data Frames and Plotting
+
+We have seen that the basic data structure in R is the vector. In this course, we will often interact with the data frame, which can informally
+be thought of as a collection of vectors. The data frame is structured like a matrix, but the columns of the matrix are *named*. Plus, the data type in data frame could be differenct(numeric/character/logical), while data type in matrix has to be the same. 
+Furthermore, you can extract a column from a data frame by name, and once you do so you get a vector. 
+
+This will become clear through practice. Here we load the built in data frame "mtcars", and look at its first few rows using the function "head".
+
+```{r}
+data(mtcars)   #load a built in data set.
+head(mtcars)
+```
+
+We use the `names()` function to determine the names of data frame columns
+```{r}
+names(mtcars)
+```
+
+To read the documentation about the data set use `?`, as in `?mtcars`.
+
+We use the "$" notation to access columns of the data frame:
+```{r, results="hide"}
+mtcars$cyl
+```
+
+Along with the "$" notation, you can also extract columns from the data frame using similar syntax to vectors:
+```{r, results="hide"}
+mtcars[,"cyl"]
+mtcars[,2]
+mtcars[,-c(1,3:11)]
+mtcars[,colnames(mtcars) == "cyl"]
+```
+
+For diagnostics, we often want to look at scatter plots of the data. 
+The built in function `plot()` can make these scatter plots for us.
+The options here control how the plot will appear -- these are very important for homework,
+since you must be sure to clearly display your results.
+```{r}
+plot(x=mtcars$cyl,
+     y=mtcars$mpg,
+     col="brown",
+     pch=19,
+     xlab="Cylinders in Car",
+     ylab="Miles per Gallon",
+     main="Scatterplot of MPG vs. Cylinders")
+```
+
+Similarly, we can create box-plots from data frames using the built-in function `boxplot()`:
+```{r}
+boxplot(mpg ~ cyl,
+        data=mtcars,
+        xlab="Cylinders in Car",
+        ylab="Miles per Gallon",
+        main="Boxplot")
+```
+
+# Linear Regression
+
+The `lm()` function is used to fit regression models in R.
+Here we fit the simple OLS regression of MPG vs. Cylinders:
+```{r}
+mpg.reg <- lm(mpg ~ cyl, data=mtcars)
+```
+
+
+The `lm()` function returns an object which has many useful components.
+To see what you can access via `mpg.reg$...`, use the `names()` function
+```{r, results="hide"}
+names(mpg.reg)
+```
+
+We will learn about more about the quantities available over the course.
+However, we can also use the model to get coefficient estimates of $\beta_0$ and $\beta_1$.
+To do so, we use the `summary()` function:
+```{r}
+mpg.sum <- summary(mpg.reg)
+mpg.sum
+```
+
+The summary also has accessible components. Once again, we see what they are using with `names()`:
+```{r, results="hide"}
+names(mpg.sum)
+```
+
+We see we can access coefficient data.
+It turns out these are stored in a matrix, a close relative of the data frame.
+```{r}
+mpg.coefs <- mpg.sum$coefficients
+mpg.coefs
+```
+
+We can use simlar notation to vectors and data frames to access elements.
+```{r, results="hide"}
+mpg.coefs[1,] #get the first row of the matrix (the beta estimates)
+mpg.coefs[,2] #get the second column (the standard errors)
+mpg.coefs[1,3] #Get the element in the third column of the first row (the t value)
+```
+
+Like data frames, when we select rows or columns, we get vectors
+```{r, results="hide"}
+coef.est <- mpg.coefs[,1]
+se.est <- mpg.coefs[,2]
+```
+
+Finally, let's super-impose the regression line on the scatterplot.
+We use the function `abline()` to do this, as it can take the output of `lm()` directly.
+```{r}
+plot(mtcars$cyl,
+     mtcars$mpg,
+     col="brown",
+     pch=19,
+     xlab="Cylinders in Car",
+     ylab="Miles per Gallon",
+     main="Scatterplot of MPG vs. Cylinders")
+abline(mpg.reg, col="red", lwd=2, lty=2) 
+```
+
+# ggplot
+```{r,echo = T,message=FALSE}
+library(ggplot2)
+g <- ggplot(data = mtcars,
+             aes(x= cyl, y= mpg)) +
+  geom_point(colour = 'brown') +
+  geom_smooth(method = 'lm',se = FALSE, colour = 'red', linetype = 'dashed')
+g
+
+```
+
+# R Markdown
+
+This review was written in R Markdown and compiled into an HTML document. 
+**Open `lab1.Rmd`, the source code for this review, and take a brief look through the text and code.**
+To create a new R Markdown document, go to the "File" menu, select "New File", select "R Markdown...", and fill out the "Title" and "Author" fields.
+
+Section titles in R Markdown are denoted with one or more `#` symbols.
+One `#` makes the biggest text, more `#`s make smaller text suitable for subsection titles.
+Examples can be found throughout the source code for this document.
+
+* Regular text is easy. Simply write what you want to say.
+* *Italic text* is made by surrounding text with single asterisks like so: `*Italic text*`.
+* **Bold text** is made by surrounding text with double asterisks like so: `**Bold text**`.
+* Some special characters, like asterisks "\*" and backslashes "\\"
+need to have backslashes before them so that R Markdown knows that they are not commands, like so: `\*`, `\\`
+
+## Code chunks
+
+Navigate to this section and follow along in the source.
+
+In R Markdown, most of the R code is contained in code blocks called *chunks*. Like so:
+```{r}
+e <- c(1, 3, 8)
+e
+```
+
+
+If you only want the output to appear, using `echo=FALSE` makes it so only the output of
+this R code appears in the output.
+
+```{r, echo=FALSE}
+e <- c(1, 3, 8)
+e
+```
+
+If you only want the code to appear, use `results="hide"`.
+```{r, results="hide"}
+v <- c(1, 3, 8)
+v
+```
+
+# Exercise
+
+1. Create an R Markdown document now, with title "Exercise" and your name.
+2. Create one or more sections in your document.
+3. Write some ordinary text, bold text, italic text, and special characters.
+4. Create a code chunk that creates and displays a numeric vector containing all even numbers between 2 and 78.
+5. Create a code chunk that computes and displays the mean and standard deviation of your vector from (4) _without_ displaying the code in the output.
+6. Create a code chunk that loads the built-in data set `mtcars` and displays a scatter plot of the variables `wt` versus `drat`, with appropriate axis labels (remember to check the documentation).
+7. Create a code chunk that loads the built-in data set `trees`, creates a scatter plot of Height versus Volume, then fits a simple regression of Height on Volume (with appropriate axis labels) and adds the regression line to your scatter plot.
+
+# Additional resources
+
+* [R tutorial](http://www.cyclismo.org/tutorial/R/)
+
+* [Markdown webpage](https://daringfireball.net/projects/markdown/)
+
+* [R Markdown tutorial](http://rmarkdown.rstudio.com/lesson-1.html)
+
+* [R Markdown reference](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf)
+
+* [R Markdown cheatsheet (better format)](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+
+* [R Markdown cheatsheet (more recent)](https://www.rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)
+
+* [ggplot cheatsheet](https://rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf)

@@ -1,2 +1,4 @@
 "0","knitr::opts_chunk$set(echo = TRUE)"
 "0","library(survey)"
+"0","library(foreign)"
+"0","library(dplyr)"

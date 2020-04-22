@@ -1,7 +1,11 @@
-"0","dim(api_srs)
-"
+"0","set.seed(2000)"
+"0","apipop$nschools <- nrow(apipop)"
+"0","sample_rows <- sample(1:nrow(apipop), 350)"
+"0","api_srs <- apipop[sample_rows,]"
+"0","dim(api_srs)"
 "1","[1]"
 "1"," 350"
 "1","  38"
 "1","
 "
+"0","srsdesign <- svydesign(id=~snum, fpc=~nschools, data=api_srs)"

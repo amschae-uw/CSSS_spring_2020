@@ -1,0 +1,226 @@
+---
+title: "Lab 3: Functions, processing time, PPS"
+author: "Jessica Godwin"
+date: "4/15/2020"
+output: 
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = '~/Dropbox/TA-shared-Godwin/labs-2018/Lab 3')
+```
+
+<!-- ## Homework 1, Problem 1 -->
+<!-- Properties: -->
+<!-- \begin{enumerate} -->
+<!-- \item Every individual in the population has $\pi_i > 0$. -->
+<!-- \item $\pi$ are know for all individuals. -->
+<!-- \item $\pi_{ij} > 0$ for all distinct individuals $i$ and $j$. -->
+<!-- \item $\pi_{ij}$ are known for all individuals $i$ and $j$. -->
+<!-- \end{enumerate} -->
+
+<!-- \begin{itemize} -->
+<!--   \item Imagine systematic sampling that involves taking a list of the population and choosing, for example, every 100th entry in the list. Which of the necessary properties of a probability sample does this procedure have? Explain.\\ -->
+<!--   \begin{itemize} -->
+<!--   \item Prop. 1: $\pi_i = 0$ for $i = 1, \dots, 99$, $\pi_i = 1$ for $i = 100$, etc. DOES NOT HOLD. -->
+<!--   \item Prop. 2: As seen above, if we know the index of each individual in the sampling frame, we know the $\pi_i$. -->
+<!--   \item Prop. 3: $\pi_{100,200}  = 1$, but $\pi_{1,2}$ = 0. DOES NOT HOLD. -->
+<!--   \item Prop. 4: As seen above, if we know the index of each individual in the sampling frame, we know the $\pi_{i,j}$. -->
+<!--   \end{itemize} -->
+
+<!-- \item Imagine systematic sampling with multiple random starts where we choose 5 random starting points in 1, 2, $\ldots$, 500 and take every 500th entry starting form each of the 5 random points. Which of the necessary properties of a probability sample does this procedure have? Explain. -->
+<!-- \begin{itemize} -->
+<!-- \item Prop. 1: For each index $i$, $\pi_i = 5/500 > 0$. -->
+<!-- \item Prop. 2: See above. -->
+<!-- \item Prop. 3: For each $i$ and $j$, $\pi_{ij} = (5/500)\times(4/499) > 0$ -->
+<!-- \item Prop. 4: See above. -->
+<!-- \end{itemize} -->
+<!-- \end{itemize} -->
+
+
+# More with the `survey` package
+
+Load our stratified api data. Let's look at the API from 2000 again and those that met their comparable improvement target. But first, lets look at the sampling weights.
+
+```{r, echo = T}
+library(survey)
+data(api)
+
+unique(apistrat$pw[apistrat$stype == "E"])
+unique(apistrat$pw[apistrat$stype == "M"])
+unique(apistrat$pw[apistrat$stype == "H"])
+
+```
+How are these calculated? Well, let's look at our sampling frame. This will allow us to know how many of each type of school are in the population. Looking at \texttt{apistrat} will tell us how many we sampled from each school type.
+
+```{r, echo = T}
+summary(apistrat$stype)
+n <- summary(apistrat$stype)
+summary(apipop$stype)
+N <- summary(apipop$stype)
+n/N
+N/n
+unique(apistrat$pw)
+```
+
+For each person $i$ in strata $h$, $\pi_{ih}  = \dfrac{n_h}{N_h}$ and $w_h = \dfrac{N_h}{n_h}$. So for the elementary strata, $n_E = 100$ and $N_E = 4421$ so $$\pi_{iE} = \dfrac{n_E}{N_E} = 0.0226$$ and $$w_{iE} = \dfrac{N_E}{n_E} = 44.21.$$ This is what we see reflected in our sampling weights in \texttt{apistrata\$pw}. Now, let's look at proportions of schools that met their improvement target.
+
+
+## Select our own stratified sample
+```{r, echo = T}
+set.seed(0416)
+strat.index <- stratsample(apipop$stype, counts = c("E" = 100,
+                                                    "M" = 50,
+                                                    "H" = 50))
+samp <- apipop[strat.index,]
+samp$fpc <- samp$weights <- NA
+
+samp$fpc[samp$stype == "E"] <- N[1]
+samp$fpc[samp$stype == "H"] <- N[2]
+samp$fpc[samp$stype == "M"] <- N[3]
+
+samp$weights[samp$stype == "E"] <- (N/n)[1]
+samp$weights[samp$stype == "H"] <- (N/n)[2]
+samp$weights[samp$stype == "M"] <- (N/n)[3]
+```
+
+## Define the design object
+```{r,echo =T}
+
+des <- svydesign(id = ~1, strata = ~stype, 
+                 weights = ~pw, fpc = ~fpc,
+                 data = apistrat)
+
+no clusters or one cluster 
+
+des
+```
+
+## `svytotal` and `svyquantile`
+```{r, echo = T}
+svytotal(~enroll, design = des)
+
+svyquantile(~enroll, design = des,
+         quantiles = c(0, .25, .50, .75, 1))
+```
+
+## Estimating population sizes
+```{r,echo=TRUE}
+svytotal(~stype, design = des)
+```
+Why are the standard errors zero in this case?
+
+We are technically estimating the total of a binary variable, e.g. \[I_{elem} =  \begin{cases} 1 & \text{if school $i$ is elementary}\\
+0 & \text{if school $i$ is not}.\end{cases}\].
+
+What is the value of $I_{elem}$ if school $i$ is an elementary school? A middle school? A high school?
+
+For a stratified sample, the Horvitz-Thompson estimator is $$\hat{T} = \sum_{h = 1}^H \hat{T}_h = \sum_{h = 1}^H \sum_{i \in h} w_{ih}y_{ih},$$ where $H$ is the number of strata. The variance is calculated similarly, $$Var(\hat{T}) = \sum_{h = 1}^H Var(\hat{T}_h)$$. Now within each strata (school type) the values of $I_{elem}$ are identical, which means $Var(\hat{T}_h) = 0$ for all $h$. Thus, $Var(\hat{T}) = 0$.
+
+
+## Select a PPE sample
+This is not as straight-forward as you might think.
+
+```{r, echo = T}
+n <- 2
+
+set.seed(2020)
+apipop.ppe <- apipop[!is.na(apipop$enroll),]
+sample.snum <- NULL
+for(i in 1:n){
+  probs <- apipop.ppe$enroll/sum(apipop.ppe$enroll)
+  sample.idx <- sample(apipop.ppe$snum, size = 1, prob = probs)
+  print(paste0("School number ", sample.idx,
+               " is sample number ", i,
+               " with an enrollment of ",
+               apipop.ppe$enroll[apipop.ppe$snum == sample.idx],
+               ". The current iteration of its sampling probability is ",
+               apipop.ppe$enroll[apipop.ppe$snum == sample.idx]/sum(apipop.ppe$enroll),
+               " and the largest sampling probability is ",
+               max(probs), "."))
+  sample.snum <- c(sample.snum, sample.idx)
+  
+  ## Remove sampled school from our temporary frame
+  apipop.ppe <- apipop.ppe[apipop.ppe$snum != sample.idx,]
+}
+
+ppe.samp <- apipop[apipop$snum %in% sample.snum,]
+head(ppe.samp[,1:6])
+```
+# More with R
+
+## Writing a function
+
+In R you can define your own functions, which can be a lot of help. Let's write a function that creates a sample of 200 from the \texttt{apipop} dataset and then computes the total enrollment
+
+```{r, echo = T}
+
+do.one<-function(N, n){
+ library(survey)
+ data(api)
+ sample_rows<-sample(1:N, n)
+ srs <-apipop[sample_rows,]
+ dim(srs)
+ srs$fpc <- N
+ 
+ srs_design <- svydesign(id=~1,fpc=~fpc, data=srs) 
+ total<-svytotal(~enroll, design=srs_design, na.rm=T)
+
+ return(c(coef(total),SE(total)))
+}
+
+do.one(N = dim(apipop)[1], n = 200)
+```
+
+
+## Processing Time
+
+Sometimes it's helpful to know how long it takes a script to run.
+
+```{r, echo = T}
+mytime <- proc.time()[3]
+one.run <- do.one(N = dim(apipop)[1], n = 200)
+proc.time()[3] - mytime
+
+one.run
+```
+
+## For loops
+
+Maybe we want to do this experiment 10 times and compare our results.
+```{r, echo = T}
+n.sim <- 10
+results <- matrix(NA, nrow = n.sim, ncol  = 2)
+
+set.seed(0412)
+mytime <- proc.time()[3]
+
+for(i in 1:n.sim){
+  results[i,] <- do.one(N = dim(apipop)[1], n = 200)
+}
+
+run.time <- proc.time()[3] - mytime
+run.time
+
+## What if we wanted to do this 100 times?
+run.time*10
+
+##replicate() function
+results.rep <- matrix(NA, nrow = n.sim, ncol = 2)
+results.rep <- replicate(n.sim, do.one(N = dim(apipop)[1], n = 200))
+```
+
+
+### Looking at our results
+```{r, echo = T}
+dim(results)
+head(results)
+apply(results, 2, mean) ## Takes mean of columns
+
+dim(results.rep)
+head(results.rep)
+apply(results.rep, 1, mean) ## Takes mean of rows
+
+?apply
+```

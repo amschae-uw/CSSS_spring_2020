@@ -5,21 +5,21 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "4283299837",
+    "hash" : "719060094",
     "id" : "3252D1AE",
-    "lastKnownWriteTime" : 1587357893,
-    "last_content_update" : 1587357893686,
+    "lastKnownWriteTime" : 1587520935,
+    "last_content_update" : 1587520935509,
     "path" : "~/Documents/GitHub/CSSS_spring_2020/complexsurveys/Schaefer HW 1.Rmd",
     "project_path" : "Schaefer HW 1.Rmd",
     "properties" : {
-        "cursorPosition" : "118,0",
-        "last_setup_crc32" : "A0FDF6CFcfe06b1d",
-        "scrollLine" : "113"
+        "cursorPosition" : "252,387",
+        "last_setup_crc32" : "A0FDF6CF7bd0c4ce",
+        "scrollLine" : "235"
     },
     "read_only" : false,
     "read_only_alternatives" : [
     ],
-    "relative_order" : 3,
+    "relative_order" : 2,
     "source_on_save" : false,
     "source_window" : "",
     "type" : "r_markdown"

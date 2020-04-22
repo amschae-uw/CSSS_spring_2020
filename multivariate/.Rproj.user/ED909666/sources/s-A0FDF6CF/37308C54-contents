@@ -1,0 +1,54 @@
+---
+title: "Homework 1"
+author: "Alex Schaefer"
+date: "4/21/2020"
+output: pdf_document
+---
+
+
+### 1 School Quality
+
+When seeking a dream school, it is important to me that the school cultivates student growth and has a diverse student body, and that the school has adequate resources to serve my student. I would select $X_1$, $X_2$, $X_6$, and $X_7$ to include in my matrix. Because my student wants to study statistics when she finishes high school, growth in math ($X_1$) will be weighted double. 
+
+```{r}
+# insert pic of equation
+```
+
+### 2 Cluster analysis: 2012 WA election data
+
+```{r}
+data<- read.csv("wa_election.csv")
+```
+
+## 2A
+```{r}
+dist()
+```
+
+
+
+## 2B
+```{r}
+dist()
+```
+
+
+## 2C
+```{r}
+dist()
+```
+
+
+## 2D
+```{r}
+dist()
+```
+
+### 3 Euclidian Distance
+
+```{r}
+
+```
+
+
+

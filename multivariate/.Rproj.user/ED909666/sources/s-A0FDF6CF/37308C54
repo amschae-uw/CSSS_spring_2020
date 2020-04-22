@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1587523039770.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3763732167",
+    "id" : "37308C54",
+    "lastKnownWriteTime" : 1587591625,
+    "last_content_update" : 1587591625357,
+    "path" : "~/Documents/GitHub/CSSS_spring_2020/multivariate/Schaefer Homework 1.Rmd",
+    "project_path" : "Schaefer Homework 1.Rmd",
+    "properties" : {
+        "cursorPosition" : "49,0",
+        "scrollLine" : "13",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

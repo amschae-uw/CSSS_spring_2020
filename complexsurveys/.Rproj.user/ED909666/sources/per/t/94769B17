@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1587407298575.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "728130127",
+    "id" : "94769B17",
+    "lastKnownWriteTime" : 1587522134,
+    "last_content_update" : 1587522134794,
+    "path" : "~/Downloads/lab3.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "59,21",
+        "last_setup_crc32" : "A0FDF6CFf7b762a1",
+        "scrollLine" : "46"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

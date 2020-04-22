@@ -5,7 +5,7 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "1638168665",
+    "hash" : "0",
     "id" : "85EAF1E5",
     "lastKnownWriteTime" : 1586299401,
     "last_content_update" : 1586299401718,
@@ -13,8 +13,8 @@
     "project_path" : "Class examples.Rmd",
     "properties" : {
         "cursorPosition" : "25,38",
-        "last_setup_crc32" : "1976E4AAbb338d19",
-        "scrollLine" : "21",
+        "last_setup_crc32" : "",
+        "scrollLine" : "19",
         "tempName" : "Untitled1"
     },
     "read_only" : false,

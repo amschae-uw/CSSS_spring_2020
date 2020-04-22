@@ -7,19 +7,19 @@
     "folds" : "",
     "hash" : "2953446771",
     "id" : "9C32C4B3",
-    "lastKnownWriteTime" : 1587047713,
-    "last_content_update" : 1587048983915,
-    "path" : "~/Downloads/lab2.Rmd",
-    "project_path" : null,
+    "lastKnownWriteTime" : 1587359378,
+    "last_content_update" : 1587359378685,
+    "path" : "~/Documents/GitHub/CSSS_spring_2020/complexsurveys/lab2.Rmd",
+    "project_path" : "lab2.Rmd",
     "properties" : {
-        "cursorPosition" : "26,0",
+        "cursorPosition" : "148,6",
         "last_setup_crc32" : "1976E4AA3a3cf6d8",
-        "scrollLine" : "15"
+        "scrollLine" : "127"
     },
     "read_only" : false,
     "read_only_alternatives" : [
     ],
-    "relative_order" : 2,
+    "relative_order" : 5,
     "source_on_save" : false,
     "source_window" : "",
     "type" : "r_markdown"
