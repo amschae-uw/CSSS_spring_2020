@@ -1,5 +1,0 @@
-"0","read.csv(wa_election.csv)
-"
-"2","Error in read.table(file = file, header = header, sep = sep, quote = quote,  : 
-  object 'wa_election.csv' not found
-"

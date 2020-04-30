@@ -1,0 +1,251 @@
+---
+title: "CSSS 589 Lab 2 Clustering"
+author: "Ruoyi Zhu"
+date: "3/30/2020"
+output: pdf_document
+---
+# Overview and Goals
+
+In this lab, we will:
+
+* Learn how to use \texttt{R} for hierarchical clustering
+* Revisit the example of the Persian archers from the textbook
+* Cluster 50 states based on four variables
+
+
+# Persian Archers
+
+We will first reproduce the Persian Archers example from Section 2.8 of the textbook. There are 24 archers in a bas-relief in the city of Persepolis, the capitol of the Achaemenid empire. The archers all generally look quite similar, but small details differ from archer to archer. Roaf (1978) posits that some of these archers may have been carved by the same sculptor (or team of sculptors) resulting in some clusters that might be logically grouped. There are 21 different attributes which are identified for each archer. 
+
+The table presented on pg 43, is stored in the archer_data.csv file. We can load the data using the \texttt{read.csv} command and specifying the file name. R automatically looks for the file in the working directory. You can set the working directory by going to the menu bar and selecting Session > Set Working Directory > Choose Directory and then selecting the folder where the file is saved. Alternatively, you can access the data directly from my website using the second line of code.
+```{r}
+# read data from local source
+archer <- read.csv("/Users/ruoyizhu/Documents/CourseWork/CSSS589 Multiv/archer_data.csv")
+```
+
+The data is stored as a data.frame which you can think of this as just a table or something you might see in Excel arranged by rows/columns. To view the first few lines, we will use the \texttt{head} function.
+```{r}
+# view first few rows of the table
+head(archer)
+```
+
+Since we are dealing with categorical data, we cannot directly use a Minkowski distance. So, following the text, we will use a distance based on how many similar attributes each archer has. Some of the archers are missing attributes (denoted by 0 in the data). If m of the 21 attributes are missing from either archer, than we multiply the number of similar attributes by 21 / (21 - m) so that archers missing attributes do not have misleading low similarities. Note that the similarity between an archer and itself is always the maximum similarity, 21. We create a matrix and manually fill in each element of the matrix with the similarity metric.
+
+```{r}
+# Create matrix filled with 0's. has 24 rows and 24 columns
+similarities <- matrix(0, nrow = 24, ncol = 24)
+
+# the for loop repeats the expression inside the loop once for each value of i
+for(i in 1:24){
+  for(j in 1:i){
+    
+    # assign the i,j element and the j,i element
+    # == checks for element-wise equality
+    # != checks for not equal
+    similarities[i, j] <- similarities[j, i] <- 
+      sum((archer[i, ] == archer[j, ]) & archer[i, ] != 0 & archer[j, ] != 0) *
+      21 / (21 - sum( archer[i, ] == 0 | archer[j, ] == 0))
+  }
+}
+
+```
+
+In order to cluster the archers, we need a distance matrix, which we can create by simply subtracting the similarities from 21. This ensures that the all archers now have a distance of 0 with themselves, and all distances are positive.
+
+```{r}
+archer.dist <- as.dist(21 - similarities)
+```
+
+#### Questions
+* What are other reasonable ways to define a similarity measure?
+* Given a similarity measure, what are other reasonable ways to determine a distance?
+
+Now that we have defined the distances, we can create a hierarchical clustering using the \texttt{hclust} function. We must also specify the method. Options include ``single", ``complete", and ``ward.D".
+```{r}
+archer.cluster <- hclust(archer.dist, method = "complete")
+```
+
+To view the dendogram, we use the \texttt{plot} function.
+```{r, fig.width = 5, fig.height = 4, fig.align = 'center'}
+plot(archer.cluster)
+```
+
+#### Questions
+* How many clusters seem reasonable based on the dendogram?
+* What are the tradeoffs between specifying too many or too few clusters?
+
+
+# States Example
+
+Let's take a look at the states datas in R. The package state contains data sets related to the 50 states of the U.S. The state.x77 dataset related to the 50 states of the United States of America. The various states vary widely in terms of population, income, illiteracy, life expectancy etc. We will examine how we might group/cluster the different states based on income, illiteracy, life expectancy and percent high-school graduates.
+
+```{r}
+### load 'maps' package
+if(!require(maps)){
+  install.packages("maps")
+  library(maps)
+}
+
+### load 'RColorBrewer' package
+if(!require(RColorBrewer)){
+  install.packages("RColorBrewer")
+  library(RColorBrewer)
+}
+# look at states data
+?state.x77
+head(state.x77)
+```
+
+First, let's take a look at the state.x77 data. In the first column, we have the state name and each additional columns shows observed values of a variable.
+
+```{r}
+map('state',  col = palette())
+```
+
+The code below build our dataset with five variables: income, illiteracy, life expectancy and percent high-school graduates.
+
+```{r}
+vars <- c("Income","Illiteracy","Life Exp","HS Grad")
+head(state.x77[,vars])
+apply(state.x77[,vars], 2, mean)
+apply(state.x77[,vars], 2, sd)
+```
+
+Before we do any clustering, we briefly examine a few graphical summaries of the data. 
+
+```{r, fig.align='center'}
+# "par" sets the graphical parameters.
+# arg: mfrow gives the layout of the multiple plots in one window
+#   Here was have 4 rows with 5 columns. 
+# arg: mar sets the margins around each plot. the vector gives the relative 
+#   spacing for each margin starting at the bottom and going clockwise
+par(mfrow = c(2,2), mar = c(2, 2, 4, 1))
+
+# The for loop repeats the expressions in the brackets
+# In this case, each time it repeats the expression
+# it sets the variable i to a number between 1 and 18
+for(i in c(1:4))
+{
+  # plot a histogram of the data in column i *2
+  # arg: x is the data
+  # arg: main is the title. we use the column names
+  # arg: xlab and ylab are the axis labels. we leave them blank
+  # arg: cex.main gives the relative sizing of the main title
+  hist((state.x77[,vars])[,i], main = vars[i], xlab = "", ylab = "",cex.main = .8, cex.axis = .7)
+}
+```
+
+```{r, fig.width = 6, fig.height = 6, fig.align = 'center'}
+# needs to be run every time
+library("corrplot")
+
+# calculate correlation; we take out the first column 
+# because it is the county label 
+rho <- cor(state.x77[,vars])
+
+# plot visualization
+#   arg: tl.cex controls the text size
+#   arg: tl.srt controls the orientation of the text
+corrplot(rho, tl.cex = .7, tl.srt = 45)
+```
+
+
+#### Questions
+* Is the difference of 1 dollar in income comparable to the difference of 1 year in life expectancy?
+
+\bigskip
+
+Notice that variables have very different scales. So, it is reasonable to standardize the variables.
+
+```{r}
+head(scale(state.x77[,vars]))
+apply(scale(state.x77[,vars]), 2, mean)
+apply(scale(state.x77[,vars]), 2, sd)
+```
+
+To cluster the states, first we create distance matrices for both raw and standardized dataset, We will use the *dist* function which automatically calculates distance matrices for us. In particular, we will be using Euclidean distance (which is the default setting for the *dist* function). 
+
+```{r}
+# create distance (raw and standardized)
+distraw <- dist(state.x77[,vars])
+diststd <- dist(scale(state.x77[,vars]))
+
+# look at distances
+dim(as.matrix(distraw))
+dim(as.matrix(diststd))
+as.matrix(distraw)[1:4,1:4]
+as.matrix(diststd)[1:4,1:4]
+```
+
+Note that the matrix is symmetric since $d(x,y) = d(y,x)$ and the diagonal elements are all 0.
+
+To cluster the counties, we use the \texttt{hclust} command. In this particular instance, we will use the "average", "complete" and "single" clustering algorithm.
+
+```{r}
+# hierarchical clustering (raw data)
+# hclust creates a heirarchical clustering from a distance matrix
+# arg: d is the distance matrix created by dist
+# arg: method determines the agglomoration method
+hcrawSL <- hclust(distraw, method="single")
+hcrawCL <- hclust(distraw, method="complete")
+hcrawAL <- hclust(distraw, method="average")
+
+# View dendogram using the plot command
+# arg: labels gives the names of each element
+# arg: cex gives the size of the labels
+# arg: main and xlab give the main title and label for the x axis respectively
+plot(hcrawSL)
+plot(hcrawCL)
+plot(hcrawAL)
+
+# hierarchical clustering (standardized data)
+hcstdSL <- hclust(diststd, method="single")
+hcstdCL <- hclust(diststd, method="complete")
+hcstdAL <- hclust(diststd, method="average")
+
+# plot results (standardized data)
+plot(hcstdSL)
+plot(hcstdCL)
+plot(hcstdAL)
+```
+
+#### Questions
+* Based on the tree, how many clusters do you think are appropriate?
+
+\bigskip
+
+We can “cut” the tree into 3 clusters with the cutree command. “Cutting the tree” simply means splitting apart the dendogram at the highest level in the tree which will produce the desired number of distinct clusters. 
+```{r}
+state.3clusters <- cutree(tree = hcstdAL, k=3)
+state.4clusters <- cutree(tree = hcstdAL, k=4)
+state.5clusters <- cutree(tree = hcstdAL, k=5)
+state.6clusters <- cutree(tree = hcstdAL, k=6)
+```
+
+We can compute the average value of each measurement for each cluster.
+
+```{r}
+avg.value1 <- aggregate(scale(state.x77[,vars]), FUN = mean, by = list(state.3clusters))
+avg.value1
+avg.value2 <- aggregate(scale(state.x77[,vars]), FUN = mean, by = list(state.4clusters))
+avg.value2
+avg.value3 <- aggregate(scale(state.x77[,vars]), FUN = mean, by = list(state.5clusters))
+avg.value3
+avg.value4 <- aggregate(scale(state.x77[,vars]), FUN = mean, by = list(state.6clusters))
+avg.value4
+```
+
+Even more useful (or at least visually appealing) would be a map. We will use the maps package to visualize the results.
+
+```{r}
+# colors to plot for each cluster
+colors <-brewer.pal(6 , "Paired")
+# plot the counties with colors governed by the cluster
+map(database = "state",fill = T, col = colors[state.3clusters])
+map(database = "state",fill = T, col = colors[state.4clusters])
+map(database = "state",fill = T, col = colors[state.5clusters])
+map(database = "state",fill = T, col = colors[state.6clusters])
+```
+
+
+

@@ -1,0 +1,7 @@
+"0","library(maps)"
+"0","clusters.for.map <- c(county.clusters[1:26],"
+"0","rep(county.clusters[27],2),"
+"0","rep(county.clusters[28],3),"
+"0","county.clusters[29:39])"
+"0","colors <- c(""salmon"", ""plum"", ""skyblue"")"
+"0","map(database = ""county"", region = ""washington"",fill = T, col = colors[clusters.for.map])"
