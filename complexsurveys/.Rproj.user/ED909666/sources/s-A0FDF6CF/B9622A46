@@ -1,24 +1,24 @@
 {
     "collab_server" : "",
     "contents" : "",
-    "created" : 1585873398555.000,
+    "created" : 1587392298541.000,
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
     "hash" : "0",
-    "id" : "2045C05D",
-    "lastKnownWriteTime" : 1587605738,
-    "last_content_update" : 1587605738,
-    "path" : "~/Downloads/CSSS589_Lab1.Rmd",
+    "id" : "B9622A46",
+    "lastKnownWriteTime" : 1587392296,
+    "last_content_update" : 1587392296,
+    "path" : "~/Downloads/lab0.Rmd",
     "project_path" : null,
     "properties" : {
-        "cursorPosition" : "0,0",
+        "cursorPosition" : "356,66",
         "scrollLine" : "0"
     },
     "read_only" : false,
     "read_only_alternatives" : [
     ],
-    "relative_order" : 1,
+    "relative_order" : 3,
     "source_on_save" : false,
     "source_window" : "",
     "type" : "r_markdown"

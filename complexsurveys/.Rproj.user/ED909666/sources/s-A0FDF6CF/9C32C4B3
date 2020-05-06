@@ -5,7 +5,7 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "2953446771",
+    "hash" : "0",
     "id" : "9C32C4B3",
     "lastKnownWriteTime" : 1587359378,
     "last_content_update" : 1587359378685,
@@ -13,8 +13,8 @@
     "project_path" : "lab2.Rmd",
     "properties" : {
         "cursorPosition" : "148,6",
-        "last_setup_crc32" : "1976E4AA3a3cf6d8",
-        "scrollLine" : "127"
+        "last_setup_crc32" : "",
+        "scrollLine" : "0"
     },
     "read_only" : false,
     "read_only_alternatives" : [
